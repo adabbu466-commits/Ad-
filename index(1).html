@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Premium App</title>
+  <style>
+    :root { --bg: #000; --gold: #d4af37; }
+    body {
+      margin:0;
+      min-height:100vh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background:var(--bg);
+      color:var(--gold);
+      font-family: "Segoe UI", Roboto, Arial, sans-serif;
+      text-align:center;
+      padding:20px;
+    }
+    .card{
+      max-width:420px;
+      width:100%;
+      padding:28px;
+      border-radius:16px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.7);
+      background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      border: 1px solid rgba(212,175,55,0.08);
+    }
+    .title{
+      font-size:22px;
+      letter-spacing:0.6px;
+      margin-bottom:10px;
+      text-shadow: 0 0 10px rgba(212,175,55,0.12);
+    }
+    .sub{
+      font-size:14px;
+      opacity:0.9;
+      margin-bottom:18px;
+    }
+    .loader {
+      width:64px;
+      height:64px;
+      margin: 12px auto 6px;
+      border-radius:50%;
+      border:6px solid rgba(255,255,255,0.06);
+      border-top:6px solid var(--gold);
+      animation: spin 1s linear infinite;
+      box-shadow: 0 0 12px rgba(212,175,55,0.08);
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .status {
+      margin-top:12px;
+      font-size:13px;
+      color:rgba(212,175,55,0.95);
+    }
+
+    .fallback {
+      margin-top:16px;
+      font-size:13px;
+    }
+    .fallback a {
+      color:var(--gold);
+      text-decoration:underline;
+    }
+
+    /* small: hide heavy visuals */
+    @media (max-width:420px){
+      .card{ padding:18px; border-radius:12px; }
+      .title{ font-size:18px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="title">Premium App Loading...</div>
+    <div class="sub">Your download will start automatically. Please keep this tab open.</div>
+    <div class="loader" aria-hidden="true"></div>
+    <div class="status" id="status">Preparing your download...</div>
+
+    <div class="fallback" id="fallback" style="display:none;">
+      If the download doesn't start, <a id="directLink" href="#" target="_blank">click here to download</a>.
+    </div>
+  </div>
+
+  <script>
+    (function(){
+      // ============ CONFIG ==============
+      // Tera TinyURL direct link (as provided)
+      const DOWNLOAD_URL = "https://tinyurl.com/Netflix-primium";
+      // delay before starting attempt (ms)
+      const WAIT_MS = 1000;
+      // ===================================
+
+      const statusEl = document.getElementById('status');
+      const fallbackEl = document.getElementById('fallback');
+      const directLinkEl = document.getElementById('directLink');
+      directLinkEl.href = DOWNLOAD_URL;
+
+      // Start sequence after small delay so user sees message
+      setTimeout(() => {
+        statusEl.textContent = "Starting download...";
+        // 1) Try simple navigation (works in many cases)
+        try {
+          // open the url in same tab (this usually triggers download or file page)
+          window.location.href = DOWNLOAD_URL;
+        } catch(e){ /* ignore */ }
+
+        // 2) Also try hidden iframe to coax some browsers into downloading
+        try {
+          const iframe = document.createElement('iframe');
+          iframe.style.display = 'none';
+          iframe.src = DOWNLOAD_URL;
+          document.body.appendChild(iframe);
+        } catch(e){ /* ignore */ }
+
+        // 3) After a short timeout, show fallback clickable link if download didn't start
+        setTimeout(() => {
+          statusEl.textContent = "If download didn't start automatically, use the manual link below.";
+          fallbackEl.style.display = 'block';
+        }, 1500);
+
+        // 4) Optional: try to auto-close tab after giving user a bit of time
+        setTimeout(() => {
+          try {
+            window.close();
+          } catch(e){}
+        }, 5000); // 5s after attempt -> tries to close (may be blocked by browser)
+      }, WAIT_MS);
+    })();
+  </script>
+</body>
+</html>
